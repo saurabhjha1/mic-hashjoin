@@ -1,6 +1,6 @@
 mic-hashjoin
 ============
-Hash join implementation for Xeon Phi (mic) and CPU's
+Hash join implementation for Xeon Phi (mic) and CPU
  <br>Project Home Page - <a href="http://pdcc.ntu.edu.sg/xtra/phijoin-2.html">http://pdcc.ntu.edu.sg/xtra/phijoin-2.html</a>
  <br>Group Home Page - <a href="http://pdcc.ntu.edu.sg/xtra"> Xtra </a>
  <br>(c) 2014, NTU Singapore, Xtra Group
@@ -9,8 +9,8 @@ Authors
 -------
 
 * Saurabh Jha - NTU Singapore
-* Mian LU - IHPC Singapore
-* Bingsheng He- NTU Singapore
+* Mian Lu - IHPC Singapore
+* Bingsheng He - NTU Singapore
 * Huynh Phung Huynh - IHPC Singapore
 
  
