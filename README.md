@@ -1,6 +1,6 @@
 mic-hashjoin
 ============
-
+(c) 2014, NTU Singapore, Xtra Group
 
 Authors
 -------
@@ -10,7 +10,11 @@ Authors
 	* Bingsheng He- NTU Singapore
 	* Huynh Phung Huynh - IHPC Singapore
 <br>
- (c) 2014, NTU Singapore, Xtra Group
+
+
+ Project Home Page - <a href="http://pdcc.ntu.edu.sg/xtra/phijoin-2.html">http://pdcc.ntu.edu.sg/xtra/phijoin-2.html</a>
+ <br>
+ Group Home Page - <a href="http://pdcc.ntu.edu.sg/xtra"> Xtra </a>
  
 ==============================================================================================================
 
