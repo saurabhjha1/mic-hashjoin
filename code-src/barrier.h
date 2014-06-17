@@ -3,7 +3,7 @@
  * @author  Cagri Balkesen <cagri.balkesen@inf.ethz.ch>
  * @date    Wed Aug  1 14:26:56 2012
  * @version $Id: barrier.h 3017 2012-12-07 10:56:20Z bcagri $
- * 
+ *
  * @brief  Barrier implementation, defaults to Pthreads. On Mac custom
  * implementation since barriers are not included in Pthreads.
  *
@@ -33,7 +33,8 @@
         exit(EXIT_FAILURE);                             \
     }
 
-typedef struct {
+typedef struct
+{
     int             needed;
     int             called;
     pthread_mutex_t mutex;
@@ -44,7 +45,7 @@ static int barrier_init(barrier_t *barrier,int needed);
 static int barrier_destroy(barrier_t *barrier);
 static int barrier_wait(barrier_t *barrier);
 
-int 
+int
 barrier_init(barrier_t *barrier,int needed)
 {
     barrier->needed = needed;
@@ -55,7 +56,7 @@ barrier_init(barrier_t *barrier,int needed)
     return 0;
 }
 
-int 
+int
 barrier_destroy(barrier_t *barrier)
 {
     pthread_mutex_destroy(&barrier->mutex);
@@ -64,16 +65,19 @@ barrier_destroy(barrier_t *barrier)
     return 0;
 }
 
-int 
+int
 barrier_wait(barrier_t *barrier)
 {
     pthread_mutex_lock(&barrier->mutex);
     barrier->called++;
 
-    if (barrier->called == barrier->needed) {
+    if (barrier->called == barrier->needed)
+    {
         barrier->called = 0;
         pthread_cond_broadcast(&barrier->cond);
-    } else {
+    }
+    else
+    {
         pthread_cond_wait(&barrier->cond,&barrier->mutex);
     }
 

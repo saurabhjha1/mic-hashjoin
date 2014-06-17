@@ -319,12 +319,12 @@ build_hashtable_st(hashtable_t *ht, relation_t *rel)
     const __m512i voffset = _mm512_set_epi32(30,28,26,24,22,20,18,16,14,12,10,8,6,4,2,0);
     for(i=0; i < upto; i+=16)
     {
-	#ifdef PDIST
+#ifdef PDIST
         _mm_prefetch((char*)(p+PDIST),_MM_HINT_T0);
         _mm_prefetch((char*)(p+PDIST+16),_MM_HINT_T0);
         _mm_prefetch((char*)(p+PDIST+64),_MM_HINT_T1);
         _mm_prefetch((char*)(p+PDIST+80),_MM_HINT_T1);
-	#endif
+#endif
         tuple_t * dest;
         bucket_t * curr, * nxt;
         key = _mm512_i32gather_epi32(voffset,(void*)p,4);;

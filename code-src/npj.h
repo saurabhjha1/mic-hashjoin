@@ -2,7 +2,7 @@
  * @file    balanced_threads.h
  * @author  Saurabh jha <saurabh.jha.2010@gmail.com>
  * @date    Wed Aug  1 14:26:56 2012
- *  
+ *
  * @brief  Provides various variants of radix hash joins
  * @Note   Code adapted from ETH source code.
  *
@@ -35,68 +35,69 @@
 #include "generator.h"          /* numa_localize() */
 #include <immintrin.h>
 #ifdef __MIC__
-#include <assert.h> 
-#include <stdlib.h> 
-#include <sys/mman.h> 
-#define HUGE_PAGE_SIZE (2 * 1024 * 1024) 
-#define ALIGN_TO_PAGE_SIZE(x) \ 
- (((x) + HUGE_PAGE_SIZE - 1) / HUGE_PAGE_SIZE * HUGE_PAGE_SIZE) 
- 
-void *malloc_huge_pages2(size_t size) 
-{ 
-// Use 1 extra page to store allocation metadata 
-  // (libhugetlbfs is more efficient in this regard) 
-   size_t real_size = ALIGN_TO_PAGE_SIZE(size + HUGE_PAGE_SIZE); 
-    char *ptr = (char *)mmap(NULL, real_size, PROT_READ | PROT_WRITE, 
-     MAP_PRIVATE | MAP_ANONYMOUS | 
-      MAP_POPULATE | MAP_HUGETLB, -1, 0); 
-       
-        if (ptr == MAP_FAILED) { 
-         // The mmap() call failed. Try to malloc instead 
-          ptr = (char *)malloc(real_size); 
-           if (ptr == NULL) return NULL; 
-            real_size = 0; 
-             } 
-              
-              // Save real_size since mmunmap() requires a size parameter 
-                *((size_t *)ptr) = real_size; 
-                 
-                  // Skip the page with metadata 
+#include <assert.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#define HUGE_PAGE_SIZE (2 * 1024 * 1024)
+#define ALIGN_TO_PAGE_SIZE(x) \
+ (((x) + HUGE_PAGE_SIZE - 1) / HUGE_PAGE_SIZE * HUGE_PAGE_SIZE)
 
-                   return ptr + HUGE_PAGE_SIZE; 
-                   } 
-                    
-                     void free_huge_pages2(void *ptr) 
-                     { 
-                      if (ptr == NULL) return; 
-                       
-                        // Jump back to the page with metadata 
-                         void *real_ptr = (char *)ptr - HUGE_PAGE_SIZE; 
-                          // Read the original allocation size 
-                           size_t real_size = *((size_t *)real_ptr); 
-                            
-                             assert(real_size % HUGE_PAGE_SIZE == 0); 
-                              
-                               if (real_size != 0) 
-                                // The memory was allocated via mmap() 
-                                 // and must be deallocated via munmap() 
-                                  munmap(real_ptr, real_size); 
-                                   else 
-                                    // The memory was allocated via malloc() 
-                                     // and must be deallocated via free() 
-                                 free(real_ptr); 
-                                      } 
-                                       
- 
+void *malloc_huge_pages2(size_t size)
+{
+// Use 1 extra page to store allocation metadata
+    // (libhugetlbfs is more efficient in this regard)
+    size_t real_size = ALIGN_TO_PAGE_SIZE(size + HUGE_PAGE_SIZE);
+    char *ptr = (char *)mmap(NULL, real_size, PROT_READ | PROT_WRITE,
+                             MAP_PRIVATE | MAP_ANONYMOUS |
+                             MAP_POPULATE | MAP_HUGETLB, -1, 0);
+
+    if (ptr == MAP_FAILED)
+    {
+        // The mmap() call failed. Try to malloc instead
+        ptr = (char *)malloc(real_size);
+        if (ptr == NULL) return NULL;
+        real_size = 0;
+    }
+
+    // Save real_size since mmunmap() requires a size parameter
+    *((size_t *)ptr) = real_size;
+
+    // Skip the page with metadata
+
+    return ptr + HUGE_PAGE_SIZE;
+}
+
+void free_huge_pages2(void *ptr)
+{
+    if (ptr == NULL) return;
+
+    // Jump back to the page with metadata
+    void *real_ptr = (char *)ptr - HUGE_PAGE_SIZE;
+    // Read the original allocation size
+    size_t real_size = *((size_t *)real_ptr);
+
+    assert(real_size % HUGE_PAGE_SIZE == 0);
+
+    if (real_size != 0)
+        // The memory was allocated via mmap()
+        // and must be deallocated via munmap()
+        munmap(real_ptr, real_size);
+    else
+        // The memory was allocated via malloc()
+        // and must be deallocated via free()
+        free(real_ptr);
+}
+
+
 
 __m512i simd_hash1(__m512i k,int mask,int nbits)
 {
-__m512i m512mask = _mm512_set1_epi32(mask); 
-k = _mm512_and_epi32(k,m512mask);
+    __m512i m512mask = _mm512_set1_epi32(mask);
+    k = _mm512_and_epi32(k,m512mask);
 
-k = _mm512_srli_epi32(k,nbits);
-return k;
-} 
+    k = _mm512_srli_epi32(k,nbits);
+    return k;
+}
 #endif
 #ifndef BARRIER_ARRIVE
 /** barrier wait macro */
@@ -109,7 +110,7 @@ return k;
 #endif
 
 #ifndef NEXT_POW_2
-/** 
+/**
  *  compute the next number, greater than or equal to 32-bit unsigned v.
  *  taken from "bit twiddling hacks":
  *  http://graphics.stanford.edu/~seander/bithacks.html
@@ -135,7 +136,7 @@ return k;
 #define DEBUGMSG(COND, MSG, ...)                                    \
     if(COND) { fprintf(stdout, "[DEBUG] "MSG, ## __VA_ARGS__); }
 #else
-#define DEBUGMSG(COND, MSG, ...) 
+#define DEBUGMSG(COND, MSG, ...)
 #endif
 
 /** An experimental feature to allocate input relations numa-local */
@@ -147,7 +148,8 @@ extern int nthreads;      /* defined in generator.c */
  */
 typedef struct arg_t arg_t;
 
-struct arg_t {
+struct arg_t
+{
     int32_t             tid;
     hashtable_t *       ht;
     relation_t          relR;
@@ -161,20 +163,20 @@ struct arg_t {
 #endif
 } ;
 
-/** 
+/**
  * @defgroup OverflowBuckets Buffer management for overflowing buckets.
- * Simple buffer management for overflow-buckets organized as a 
+ * Simple buffer management for overflow-buckets organized as a
  * linked-list of bucket_buffer_t.
  * @{
  */
 
-/** 
- * Initializes a new bucket_buffer_t for later use in allocating 
+/**
+ * Initializes a new bucket_buffer_t for later use in allocating
  * buckets when overflow occurs.
- * 
+ *
  * @param ppbuf [in,out] bucket buffer to be initialized
  */
-void 
+void
 init_bucket_buffer(bucket_buffer_t ** ppbuf)
 {
     bucket_buffer_t * overflowbuf;
@@ -185,7 +187,7 @@ init_bucket_buffer(bucket_buffer_t ** ppbuf)
     *ppbuf = overflowbuf;
 }
 
-/** 
+/**
  * Returns a new bucket_t from the given bucket_buffer_t.
  * If the bucket_buffer_t does not have enough space, then allocates
  * a new bucket_buffer_t and adds to the list.
@@ -193,16 +195,18 @@ init_bucket_buffer(bucket_buffer_t ** ppbuf)
  * @param result [out] the new bucket
  * @param buf [in,out] the pointer to the bucket_buffer_t pointer
  */
-inline void 
+inline void
 get_new_bucket(bucket_t ** result, bucket_buffer_t ** buf)
 {
-    if((*buf)->count < OVERFLOW_BUF_SIZE) {
+    if((*buf)->count < OVERFLOW_BUF_SIZE)
+    {
         *result = (*buf)->buf + (*buf)->count;
         (*buf)->count ++;
     }
-    else {
+    else
+    {
         /* need to allocate new buffer */
-        bucket_buffer_t * new_buf = (bucket_buffer_t*) 
+        bucket_buffer_t * new_buf = (bucket_buffer_t*)
                                     malloc(sizeof(bucket_buffer_t));
         new_buf->count = 1;
         new_buf->next  = *buf;
@@ -215,27 +219,29 @@ get_new_bucket(bucket_t ** result, bucket_buffer_t ** buf)
 void
 free_bucket_buffer(bucket_buffer_t * buf)
 {
-    do {
+    do
+    {
         bucket_buffer_t * tmp = buf->next;
         free(buf);
         buf = tmp;
-    } while(buf);
+    }
+    while(buf);
 }
 
 /** @} */
 
 
-/** 
+/**
  * @defgroup NPO The No Partitioning Optimized Join Implementation
  * @{
  */
 
-/** 
- * Allocates a hashtable of NUM_BUCKETS and inits everything to 0. 
- * 
+/**
+ * Allocates a hashtable of NUM_BUCKETS and inits everything to 0.
+ *
  * @param ht pointer to a hashtable_t pointer
  */
-void 
+void
 allocate_hashtable(hashtable_t ** ppht, uint32_t nbuckets)
 {
     hashtable_t * ht;
@@ -246,14 +252,16 @@ allocate_hashtable(hashtable_t ** ppht, uint32_t nbuckets)
 
     /* allocate hashtable buckets cache line aligned */
     if (posix_memalign((void**)&ht->buckets, CACHE_LINE_SIZE,
-                       ht->num_buckets * sizeof(bucket_t))){
+                       ht->num_buckets * sizeof(bucket_t)))
+    {
         perror("Aligned allocation failed!\n");
         exit(EXIT_FAILURE);
     }
 
     /** Not an elegant way of passing whether we will numa-localize, but this
         feature is experimental anyway. */
-    if(numalocalize) {
+    if(numalocalize)
+    {
         tuple_t * mem = (tuple_t *) ht->buckets;
         uint32_t ntuples = (ht->num_buckets*sizeof(bucket_t))/sizeof(tuple_t);
         numa_localize(mem, ntuples, nthreads);
@@ -265,25 +273,25 @@ allocate_hashtable(hashtable_t ** ppht, uint32_t nbuckets)
     *ppht = ht;
 }
 
-/** 
+/**
  * Releases memory allocated for the hashtable.
- * 
+ *
  * @param ht pointer to hashtable
  */
-void 
+void
 destroy_hashtable(hashtable_t * ht)
 {
     free_huge_pages2(ht->buckets);
     free(ht);
 }
 
-/** 
+/**
  * Single-thread hashtable build method, ht is pre-allocated.
- * 
+ *
  * @param ht hastable to be built
  * @param rel the build relation
  */
-void 
+void
 build_hashtable_st(hashtable_t *ht, relation_t *rel)
 {
     uint32_t i;
@@ -293,56 +301,62 @@ build_hashtable_st(hashtable_t *ht, relation_t *rel)
     int numR = rel->num_tuples;
     __attribute__ ((align(64))) int extVector[16];
     int *p=(int32_t*)rel->tuples;
-   
+
     const __m512i voffset = _mm512_set_epi32(30,28,26,24,22,20,18,16,14,12,10,8,6,4,2,0);
     int upto = (numR>>4)<<4;
-    #ifdef SIMD
-   for(i=0; i < upto; i+=16){
-     	_mm_prefetch((char*)(p+PDIST),_MM_HINT_T0);
-     	_mm_prefetch((char*)(p+PDIST+16),_MM_HINT_T0);
-     	_mm_prefetch((char*)(p+PDIST+64),_MM_HINT_T1);
-     	_mm_prefetch((char*)(p+PDIST+80),_MM_HINT_T1);
+#ifdef SIMD
+    for(i=0; i < upto; i+=16)
+    {
+        _mm_prefetch((char*)(p+PDIST),_MM_HINT_T0);
+        _mm_prefetch((char*)(p+PDIST+16),_MM_HINT_T0);
+        _mm_prefetch((char*)(p+PDIST+64),_MM_HINT_T1);
+        _mm_prefetch((char*)(p+PDIST+80),_MM_HINT_T1);
         tuple_t * dest;
         bucket_t * curr, * nxt;
-       key = _mm512_i32gather_epi32(voffset,(void*)p,4);;
-	
-	 key = simd_hash1(key,hashmask,skipbits);
-	 _mm512_store_epi32((void*)extVector,key);
-	 #pragma unroll(16)
-	 for(int j=0;j<16;j+=1)
-	 {
-	curr = ht->buckets + extVector[j];
-        nxt  = curr->next;
+        key = _mm512_i32gather_epi32(voffset,(void*)p,4);;
 
-        if(curr->count == BUCKET_SIZE) {
-            if(!nxt || nxt->count == BUCKET_SIZE) {
-                bucket_t * b;
-                b = (bucket_t*) calloc(1, sizeof(bucket_t));
-                curr->next = b;
-                b->next = nxt;
-                b->count = 1;
-                dest = b->tuples;
+        key = simd_hash1(key,hashmask,skipbits);
+        _mm512_store_epi32((void*)extVector,key);
+#pragma unroll(16)
+        for(int j=0; j<16; j+=1)
+        {
+            curr = ht->buckets + extVector[j];
+            nxt  = curr->next;
+
+            if(curr->count == BUCKET_SIZE)
+            {
+                if(!nxt || nxt->count == BUCKET_SIZE)
+                {
+                    bucket_t * b;
+                    b = (bucket_t*) calloc(1, sizeof(bucket_t));
+                    curr->next = b;
+                    b->next = nxt;
+                    b->count = 1;
+                    dest = b->tuples;
+                }
+                else
+                {
+                    dest = nxt->tuples + nxt->count;
+                    nxt->count ++;
+                }
             }
-            else {
-                dest = nxt->tuples + nxt->count;
-                nxt->count ++;
+            else
+            {
+                dest = curr->tuples + curr->count;
+                curr->count ++;
             }
+            *dest = rel->tuples[i+j];
         }
-        else {
-            dest = curr->tuples + curr->count;
-            curr->count ++;
-        }
-        *dest = rel->tuples[i+j];
+        p+=32;
     }
-    p+=32;
-	 }
-        
-  #else 
-  	i=0;
-  #endif  
-  
 
-    for(; i < numR; i++){
+#else
+    i=0;
+#endif
+
+
+    for(; i < numR; i++)
+    {
         tuple_t * dest;
         bucket_t * curr, * nxt;
         int32_t idx = HASH(rel->tuples[i].key, hashmask, skipbits);
@@ -352,8 +366,10 @@ build_hashtable_st(hashtable_t *ht, relation_t *rel)
         curr = ht->buckets + idx;
         nxt  = curr->next;
 
-        if(curr->count == BUCKET_SIZE) {
-            if(!nxt || nxt->count == BUCKET_SIZE) {
+        if(curr->count == BUCKET_SIZE)
+        {
+            if(!nxt || nxt->count == BUCKET_SIZE)
+            {
                 bucket_t * b;
                 b = (bucket_t*) calloc(1, sizeof(bucket_t));
                 curr->next = b;
@@ -361,12 +377,14 @@ build_hashtable_st(hashtable_t *ht, relation_t *rel)
                 b->count = 1;
                 dest = b->tuples;
             }
-            else {
+            else
+            {
                 dest = nxt->tuples + nxt->count;
                 nxt->count ++;
             }
         }
-        else {
+        else
+        {
             dest = curr->tuples + curr->count;
             curr->count ++;
         }
@@ -374,16 +392,16 @@ build_hashtable_st(hashtable_t *ht, relation_t *rel)
     }
 }
 
-/** 
- * Probes the hashtable for the given outer relation, returns num results. 
+/**
+ * Probes the hashtable for the given outer relation, returns num results.
  * This probing method is used for both single and multi-threaded version.
- * 
+ *
  * @param ht hashtable to be probed
  * @param rel the probing outer relation
- * 
+ *
  * @return number of matching tuples
  */
-int64_t 
+int64_t
 probe_hashtable(hashtable_t *ht, relation_t *rel)
 {
     uint32_t i, j;
@@ -391,52 +409,57 @@ probe_hashtable(hashtable_t *ht, relation_t *rel)
 
     const uint32_t hashmask = ht->hash_mask;
     const uint32_t skipbits = ht->skip_bits;
-#ifdef PREFETCH_NPJ    
+#ifdef PREFETCH_NPJ
     size_t prefetch_index = PREFETCH_DISTANCE;
 #endif
-    
+
     matches = 0;
 
     for (i = 0; i < rel->num_tuples; i++)
     {
-#ifdef PREFETCH_NPJ        
-        if (prefetch_index < rel->num_tuples) {
-			intkey_t idx_prefetch = HASH(rel->tuples[prefetch_index++].key,
+#ifdef PREFETCH_NPJ
+        if (prefetch_index < rel->num_tuples)
+        {
+            intkey_t idx_prefetch = HASH(rel->tuples[prefetch_index++].key,
                                          hashmask, skipbits);
-			__builtin_prefetch(ht->buckets + idx_prefetch, 0, 1);
+            __builtin_prefetch(ht->buckets + idx_prefetch, 0, 1);
         }
 #endif
-        
+
         intkey_t idx = HASH(rel->tuples[i].key, hashmask, skipbits);
         bucket_t * b = ht->buckets+idx;
-	
-        do {
-            for(j = 0; j < b->count; j++) {
-                if(rel->tuples[i].key == b->tuples[j].key){
+
+        do
+        {
+            for(j = 0; j < b->count; j++)
+            {
+                if(rel->tuples[i].key == b->tuples[j].key)
+                {
                     matches ++;
                     /* TODO: we don't materialize the results. */
                 }
             }
 
             b = b->next;/* follow overflow pointer */
-        } while(b);
+        }
+        while(b);
     }
 
     return matches;
 }
 
 /** print out the execution time statistics of the join */
-static void 
+static void
 print_timing(uint64_t total, uint64_t build, uint64_t part,
-            uint64_t numtuples, int64_t result,
-            struct timeval * start, struct timeval * end)
+             uint64_t numtuples, int64_t result,
+             struct timeval * start, struct timeval * end)
 {
     double diff_usec = (((*end).tv_sec*1000000L + (*end).tv_usec)
                         - ((*start).tv_sec*1000000L+(*start).tv_usec));
     double cyclestuple = total;
     cyclestuple /= numtuples;
     fprintf(stdout, "RUNTIME TOTAL, BUILD, PART (cycles): \n");
-    fprintf(stderr, "%llu \t %llu \t %llu ", 
+    fprintf(stderr, "%llu \t %llu \t %llu ",
             total, build, part);
     fprintf(stdout, "\n");
     fprintf(stdout, "TOTAL-TIME-USECS, TOTAL-TUPLES, CYCLES-PER-TUPLE: \n");
@@ -449,7 +472,7 @@ print_timing(uint64_t total, uint64_t build, uint64_t part,
 }
 
 /** \copydoc NPO_st */
-int64_t 
+int64_t
 NPO_st(relation_t *relR, relation_t *relS, int nthreads)
 {
     hashtable_t * ht;
@@ -464,7 +487,7 @@ NPO_st(relation_t *relR, relation_t *relS, int nthreads)
 #ifndef NO_TIMING
     gettimeofday(&start, NULL);
     startTimer(&timer1);
-    startTimer(&timer2); 
+    startTimer(&timer2);
     timer3 = 0; /* no partitioning */
 #endif
 
@@ -488,7 +511,7 @@ NPO_st(relation_t *relR, relation_t *relS, int nthreads)
     return result;
 }
 
-/** 
+/**
  * Multi-thread hashtable build method, ht is pre-allocated.
  * Writes to buckets are synchronized via latches.
  *
@@ -496,8 +519,8 @@ NPO_st(relation_t *relR, relation_t *relS, int nthreads)
  * @param rel the build relation
  * @param overflowbuf pre-allocated chunk of buckets for overflow use.
  */
-void 
-build_hashtable_mt(hashtable_t *ht, relation_t *rel, 
+void
+build_hashtable_mt(hashtable_t *ht, relation_t *rel,
                    bucket_buffer_t ** overflowbuf)
 {
     uint32_t i;
@@ -507,19 +530,21 @@ build_hashtable_mt(hashtable_t *ht, relation_t *rel,
 #ifdef PREFETCH_NPJ
     size_t prefetch_index = PREFETCH_DISTANCE;
 #endif
-    
-    for(i=0; i < rel->num_tuples; i++){
+
+    for(i=0; i < rel->num_tuples; i++)
+    {
         tuple_t * dest;
         bucket_t * curr, * nxt;
 
 #ifdef PREFETCH_NPJ
-        if (prefetch_index < rel->num_tuples) {
+        if (prefetch_index < rel->num_tuples)
+        {
             intkey_t idx_prefetch = HASH(rel->tuples[prefetch_index++].key,
                                          hashmask, skipbits);
-			__builtin_prefetch(ht->buckets + idx_prefetch, 1, 1);
+            __builtin_prefetch(ht->buckets + idx_prefetch, 1, 1);
         }
 #endif
-        
+
         int32_t idx = HASH(rel->tuples[i].key, hashmask, skipbits);
         /* copy the tuple to appropriate hash bucket */
         /* if full, follow nxt pointer to find correct place */
@@ -527,8 +552,10 @@ build_hashtable_mt(hashtable_t *ht, relation_t *rel,
         lock(&curr->latch);
         nxt = curr->next;
 
-        if(curr->count == BUCKET_SIZE) {
-            if(!nxt || nxt->count == BUCKET_SIZE) {
+        if(curr->count == BUCKET_SIZE)
+        {
+            if(!nxt || nxt->count == BUCKET_SIZE)
+            {
                 bucket_t * b;
                 /* b = (bucket_t*) calloc(1, sizeof(bucket_t)); */
                 /* instead of calloc() everytime, we pre-allocate */
@@ -538,12 +565,14 @@ build_hashtable_mt(hashtable_t *ht, relation_t *rel,
                 b->count   = 1;
                 dest       = b->tuples;
             }
-            else {
+            else
+            {
                 dest = nxt->tuples + nxt->count;
                 nxt->count ++;
             }
         }
-        else {
+        else
+        {
             dest = curr->tuples + curr->count;
             curr->count ++;
         }
@@ -554,14 +583,14 @@ build_hashtable_mt(hashtable_t *ht, relation_t *rel,
 
 }
 
-/** 
+/**
  * Just a wrapper to call the build and probe for each thread.
- * 
+ *
  * @param param the parameters of the thread, i.e. tid, ht, reln, ...
- * 
- * @return 
+ *
+ * @return
  */
-void * 
+void *
 npo_thread(void * param)
 {
     int rv;
@@ -572,21 +601,23 @@ npo_thread(void * param)
     init_bucket_buffer(&overflowbuf);
 
 #ifdef PERF_COUNTERS
-    if(args->tid == 0){
+    if(args->tid == 0)
+    {
         PCM_initPerformanceMonitor(NULL, NULL);
         PCM_start();
     }
 #endif
-    
+
     /* wait at a barrier until each thread starts and start timer */
     BARRIER_ARRIVE(args->barrier, rv);
 
 #ifndef NO_TIMING
     /* the first thread checkpoints the start time */
-    if(args->tid == 0){
+    if(args->tid == 0)
+    {
         gettimeofday(&args->start, NULL);
         startTimer(&args->timer1);
-        startTimer(&args->timer2); 
+        startTimer(&args->timer2);
         args->timer3 = 0; /* no partitionig phase */
     }
 #endif
@@ -598,11 +629,12 @@ npo_thread(void * param)
     BARRIER_ARRIVE(args->barrier, rv);
 
 #ifdef PERF_COUNTERS
-    if(args->tid == 0){
-      PCM_stop();
-      PCM_log("========== Build phase profiling results ==========\n");
-      PCM_printResults();
-      PCM_start();
+    if(args->tid == 0)
+    {
+        PCM_stop();
+        PCM_log("========== Build phase profiling results ==========\n");
+        PCM_printResults();
+        PCM_start();
     }
     /* Just to make sure we get consistent performance numbers */
     BARRIER_ARRIVE(args->barrier, rv);
@@ -611,8 +643,9 @@ npo_thread(void * param)
 
 #ifndef NO_TIMING
     /* build phase finished, thread-0 checkpoints the time */
-    if(args->tid == 0){
-        stopTimer(&args->timer2); 
+    if(args->tid == 0)
+    {
+        stopTimer(&args->timer2);
     }
 #endif
 
@@ -624,14 +657,16 @@ npo_thread(void * param)
     BARRIER_ARRIVE(args->barrier, rv);
 
     /* probe phase finished, thread-0 checkpoints the time */
-    if(args->tid == 0){
-      stopTimer(&args->timer1); 
-      gettimeofday(&args->end, NULL);
+    if(args->tid == 0)
+    {
+        stopTimer(&args->timer1);
+        gettimeofday(&args->end, NULL);
     }
 #endif
 
 #ifdef PERF_COUNTERS
-    if(args->tid == 0) {
+    if(args->tid == 0)
+    {
         PCM_stop();
         PCM_log("========== Probe phase profiling results ==========\n");
         PCM_printResults();
@@ -649,10 +684,10 @@ npo_thread(void * param)
 }
 
 /** \copydoc NPO */
-int64_t 
+int64_t
 NPO(relation_t *relR, relation_t *relS, int nthreads)
 {
-	printf("\n Size of tuple:%d",sizeof(tuple_t));
+    printf("\n Size of tuple:%d",sizeof(tuple_t));
     hashtable_t * ht;
     int64_t result = 0;
     int32_t numR, numS, numRthr, numSthr; /* total and per thread num */
@@ -670,15 +705,17 @@ NPO(relation_t *relR, relation_t *relS, int nthreads)
     numS = relS->num_tuples;
     numRthr = numR / nthreads;
     numSthr = numS / nthreads;
-    
+
     rv = pthread_barrier_init(&barrier, NULL, nthreads);
-    if(rv != 0){
+    if(rv != 0)
+    {
         printf("Couldn't create the barrier\n");
         exit(EXIT_FAILURE);
     }
 
     pthread_attr_init(&attr);
-    for(i = 0; i < nthreads; i++){
+    for(i = 0; i < nthreads; i++)
+    {
         int cpu_idx = get_cpu_id(i,nthreads);
 
         DEBUGMSG(1, "Assigning thread-%d to CPU-%d\n", i, cpu_idx);
@@ -702,14 +739,16 @@ NPO(relation_t *relR, relation_t *relS, int nthreads)
         numS -= numSthr;
 
         rv = pthread_create(&tid[i], &attr, npo_thread, (void*)&args[i]);
-        if (rv){
+        if (rv)
+        {
             printf("ERROR; return code from pthread_create() is %d\n", rv);
             exit(-1);
         }
 
     }
 
-    for(i = 0; i < nthreads; i++){
+    for(i = 0; i < nthreads; i++)
+    {
         pthread_join(tid[i], NULL);
         /* sum up results */
         result += args[i].num_results;
@@ -719,8 +758,8 @@ NPO(relation_t *relR, relation_t *relS, int nthreads)
 #ifndef NO_TIMING
     /* now print the timing results: */
     print_timing(args[0].timer1, args[0].timer2, args[0].timer3,
-                relS->num_tuples, result,
-                &args[0].start, &args[0].end);
+                 relS->num_tuples, result,
+                 &args[0].start, &args[0].end);
 #endif
 
     destroy_hashtable(ht);

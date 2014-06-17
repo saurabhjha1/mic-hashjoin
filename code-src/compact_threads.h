@@ -1,5 +1,4 @@
 
-
 #include <stdio.h>  /* FILE, fopen */
 #include <stdlib.h> /* exit, perror */
 #include <unistd.h> /* sysconf */
@@ -16,7 +15,7 @@ static int inited = 0;
 static int max_cpus;
 static int node_mapping[MAX_NODES];
 
-/** 
+/**
  * Initializes the cpu mapping from the file defined by CUSTOM_CPU_MAPPING.
  * The mapping used for our machine Intel L5520 is = "8 0 1 2 3 8 9 10 11".
  */
@@ -24,16 +23,20 @@ static int
 init_mappings_from_file()
 {
     FILE * cfg;
-	int i;
+    int i;
 
     cfg = fopen(CUSTOM_CPU_MAPPING, "r");
-    if (cfg!=NULL) {
-        if(fscanf(cfg, "%d", &max_cpus) <= 0) {
+    if (cfg!=NULL)
+    {
+        if(fscanf(cfg, "%d", &max_cpus) <= 0)
+        {
             perror("Could not parse input!\n");
         }
 
-        for(i = 0; i < max_cpus; i++){
-            if(fscanf(cfg, "%d", &node_mapping[i]) <= 0) {
+        for(i = 0; i < max_cpus; i++)
+        {
+            if(fscanf(cfg, "%d", &node_mapping[i]) <= 0)
+            {
                 perror("Could not parse input!\n");
             }
         }
@@ -47,18 +50,20 @@ init_mappings_from_file()
     return 0;
 }
 
-/** 
+/**
  * Try custom cpu mapping file first, if does not exist then round-robin
- * initialization among available CPUs reported by the system. 
+ * initialization among available CPUs reported by the system.
  */
-static void 
+static void
 init_mappings()
 {
-    if( init_mappings_from_file() == 0 ) {
+    if( init_mappings_from_file() == 0 )
+    {
         int i;
-        
+
         max_cpus  = sysconf(_SC_NPROCESSORS_ONLN);
-        for(i = 0; i < max_cpus; i++){
+        for(i = 0; i < max_cpus; i++)
+        {
             node_mapping[i] = i;
         }
     }
@@ -69,10 +74,11 @@ init_mappings()
 /**
  * Returns SMT aware logical to physical CPU mapping for a given thread id.
  */
-int 
-get_cpu_id(int thread_id,int n) 
+int
+get_cpu_id(int thread_id,int n)
 {
-    if(!inited){
+    if(!inited)
+    {
         init_mappings();
         inited = 1;
     }

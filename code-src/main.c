@@ -5,7 +5,7 @@
  *
  * @brief  Main entry point for running join implementations with given command
  * line parameters.
- * 
+ *
  * (c) 2012, ETH Zurich, Systems Group
  */
 
@@ -36,12 +36,14 @@ int getopt(int argc, char * const argv[],
 typedef struct algo_t  algo_t;
 typedef struct param_t param_t;
 
-struct algo_t {
+struct algo_t
+{
     char name[128];
     int64_t (*joinAlgo)(relation_t * , relation_t *, int);
 };
 
-struct param_t {
+struct param_t
+{
     algo_t * algo;
     uint32_t nthreads;
     uint32_t r_size;
@@ -65,28 +67,28 @@ extern int numalocalize;  /* defined in generator.c */
 extern int nthreads;      /* defined in generator.c */
 
 /** all available algorithms */
-static struct algo_t algos [] = 
-  {
-      {"PRO", PRO},
-      {"RJ", RJ},
-      {"PRH", PRH},
-      {"PRHO", PRHO},
-      {"NPO", NPO},
-      {"NPO_st", NPO_st}, /* NPO single threaded */
-      {{0}, 0}
-  };
+static struct algo_t algos [] =
+{
+    {"PRO", PRO},
+    {"RJ", RJ},
+    {"PRH", PRH},
+    {"PRHO", PRHO},
+    {"NPO", NPO},
+    {"NPO_st", NPO_st}, /* NPO single threaded */
+    {{0}, 0}
+};
 
 /* command line handling functions */
-void 
+void
 print_help();
 
 void
 print_version();
 
-void 
+void
 parse_args(int argc, char ** argv, param_t * cmd_params);
 
-int 
+int
 main(int argc, char ** argv)
 {
     relation_t relR;
@@ -97,7 +99,8 @@ main(int argc, char ** argv)
     cpu_set_t set;
     CPU_ZERO(&set);
     CPU_SET(0, &set);
-    if (sched_setaffinity(0, sizeof(set), &set) <0) {
+    if (sched_setaffinity(0, sizeof(set), &set) <0)
+    {
         perror("sched_setaffinity");
     }
 
@@ -136,13 +139,16 @@ main(int argc, char ** argv)
     numalocalize = cmd_params.basic_numa;
     nthreads     = cmd_params.nthreads;
 
-    if(cmd_params.fullrange_keys) {
+    if(cmd_params.fullrange_keys)
+    {
         create_relation_nonunique(&relR, cmd_params.r_size, INT_MAX);
     }
-    else if(cmd_params.nonunique_keys) {
+    else if(cmd_params.nonunique_keys)
+    {
         create_relation_nonunique(&relR, cmd_params.r_size, cmd_params.r_size);
     }
-    else {
+    else
+    {
         create_relation_pk(&relR, cmd_params.r_size);
     }
     printf("OK \n");
@@ -157,22 +163,27 @@ main(int argc, char ** argv)
 
     seed_generator(cmd_params.s_seed);
 
-    if(cmd_params.fullrange_keys) {
+    if(cmd_params.fullrange_keys)
+    {
         create_relation_fk_from_pk(&relS, &relR, cmd_params.s_size);
     }
-    else if(cmd_params.nonunique_keys) {
+    else if(cmd_params.nonunique_keys)
+    {
         /* use size of R as the maxid */
         create_relation_nonunique(&relS, cmd_params.s_size, cmd_params.r_size);
     }
-    else {
+    else
+    {
         /* if r_size == s_size then equal-dataset, else non-equal dataset */
 
-        if(cmd_params.skew > 0){
+        if(cmd_params.skew > 0)
+        {
             /* S is skewed */
-            create_relation_zipf(&relS, cmd_params.s_size, 
+            create_relation_zipf(&relS, cmd_params.s_size,
                                  cmd_params.r_size, cmd_params.skew);
         }
-        else {
+        else
+        {
             /* S is uniform foreign key */
             create_relation_fk(&relS, cmd_params.s_size, cmd_params.r_size);
         }
@@ -195,7 +206,7 @@ main(int argc, char ** argv)
 }
 
 /* command line handling functions */
-void 
+void
 print_help(char * progname)
 {
     printf("Usage: %s [options]\n", progname);
@@ -223,7 +234,7 @@ print_help(char * progname)
     \n");
 }
 
-void 
+void
 print_version()
 {
     printf("\n%s\n", PACKAGE_STRING);
@@ -231,8 +242,8 @@ print_version()
     printf("http://www.systems.ethz.ch/projects/paralleljoins\n\n");
 }
 
-static char * 
-mystrdup (const char *s) 
+static char *
+mystrdup (const char *s)
 {
     char *ss = (char*) malloc (strlen (s) + 1);
 
@@ -242,8 +253,8 @@ mystrdup (const char *s)
     return ss;
 }
 
-void 
-parse_args(int argc, char ** argv, param_t * cmd_params) 
+void
+parse_args(int argc, char ** argv, param_t * cmd_params)
 {
 
     int c, i, found;
@@ -253,129 +264,135 @@ parse_args(int argc, char ** argv, param_t * cmd_params)
     static int fullrange_flag;
     static int basic_numa;
 
-    while(1) {
+    while(1)
+    {
         static struct option long_options[] =
-            {
-                /* These options set a flag. */
-                {"verbose",    no_argument,    &verbose_flag,   1},
-                {"brief",      no_argument,    &verbose_flag,   0},
-                {"non-unique", no_argument,    &nonunique_flag, 1},
-                {"full-range", no_argument,    &fullrange_flag, 1},
-                {"basic-numa", no_argument,    &basic_numa, 1},
-                {"help",       no_argument,    0, 'h'},
-                {"version",    no_argument,    0, 'v'},
-                /* These options don't set a flag.
-                   We distinguish them by their indices. */
-                {"algo",    required_argument, 0, 'a'},
-                {"nthreads",required_argument, 0, 'n'},
-                {"perfconf",required_argument, 0, 'p'},
-                {"r-size",  required_argument, 0, 'r'},
-                {"s-size",  required_argument, 0, 's'},
-                {"perfout", required_argument, 0, 'o'},
-                {"r-seed",  required_argument, 0, 'x'},
-                {"s-seed",  required_argument, 0, 'y'},
-                {"skew",    required_argument, 0, 'z'},
-                {0, 0, 0, 0}
-            };
+        {
+            /* These options set a flag. */
+            {"verbose",    no_argument,    &verbose_flag,   1},
+            {"brief",      no_argument,    &verbose_flag,   0},
+            {"non-unique", no_argument,    &nonunique_flag, 1},
+            {"full-range", no_argument,    &fullrange_flag, 1},
+            {"basic-numa", no_argument,    &basic_numa, 1},
+            {"help",       no_argument,    0, 'h'},
+            {"version",    no_argument,    0, 'v'},
+            /* These options don't set a flag.
+               We distinguish them by their indices. */
+            {"algo",    required_argument, 0, 'a'},
+            {"nthreads",required_argument, 0, 'n'},
+            {"perfconf",required_argument, 0, 'p'},
+            {"r-size",  required_argument, 0, 'r'},
+            {"s-size",  required_argument, 0, 's'},
+            {"perfout", required_argument, 0, 'o'},
+            {"r-seed",  required_argument, 0, 'x'},
+            {"s-seed",  required_argument, 0, 'y'},
+            {"skew",    required_argument, 0, 'z'},
+            {0, 0, 0, 0}
+        };
         /* getopt_long stores the option index here. */
         int option_index = 0;
-     
+
         c = getopt_long (argc, argv, "a:n:p:r:s:o:x:y:z:hv",
                          long_options, &option_index);
-     
+
         /* Detect the end of the options. */
         if (c == -1)
             break;
         switch (c)
         {
-          case 0:
-              /* If this option set a flag, do nothing else now. */
-              if (long_options[option_index].flag != 0)
-                  break;
-              printf ("option %s", long_options[option_index].name);
-              if (optarg)
-                  printf (" with arg %s", optarg);
-              printf ("\n");
-              break;
-     
-          case 'a':
-              i = 0; found = 0;
-              while(algos[i].joinAlgo) {
-                  if(strcmp(optarg, algos[i].name) == 0) {
-                      cmd_params->algo = &algos[i];
-                      found = 1;
-                      break;
-                  }
-                  i++;
-              }
-              
-              if(found == 0) {
-                  printf("[ERROR] Join algorithm named `%s' does not exist!\n",
-                         optarg);
-                  print_help(argv[0]);
-                  exit(EXIT_SUCCESS);
-              }
-              break;
+        case 0:
+            /* If this option set a flag, do nothing else now. */
+            if (long_options[option_index].flag != 0)
+                break;
+            printf ("option %s", long_options[option_index].name);
+            if (optarg)
+                printf (" with arg %s", optarg);
+            printf ("\n");
+            break;
 
-          case 'h':
-          case '?':
-              /* getopt_long already printed an error message. */
-              print_help(argv[0]);
-              exit(EXIT_SUCCESS);
-              break;
-     
-          case 'v':
-              print_version();
-              exit(EXIT_SUCCESS);
-              break;
+        case 'a':
+            i = 0;
+            found = 0;
+            while(algos[i].joinAlgo)
+            {
+                if(strcmp(optarg, algos[i].name) == 0)
+                {
+                    cmd_params->algo = &algos[i];
+                    found = 1;
+                    break;
+                }
+                i++;
+            }
 
-          case 'n':
-              cmd_params->nthreads = atoi(optarg);
-              break;
+            if(found == 0)
+            {
+                printf("[ERROR] Join algorithm named `%s' does not exist!\n",
+                       optarg);
+                print_help(argv[0]);
+                exit(EXIT_SUCCESS);
+            }
+            break;
 
-          case 'p':
-              cmd_params->perfconf = mystrdup(optarg);
-              break;
-     
-          case 'r':
-              cmd_params->r_size = atoi(optarg);
-              break;
-     
-          case 's':
-              cmd_params->s_size = atoi(optarg);
-              break;
+        case 'h':
+        case '?':
+            /* getopt_long already printed an error message. */
+            print_help(argv[0]);
+            exit(EXIT_SUCCESS);
+            break;
 
-          case 'o':
-              cmd_params->perfout = mystrdup(optarg);
-              break;
+        case 'v':
+            print_version();
+            exit(EXIT_SUCCESS);
+            break;
 
-          case 'x':
-              cmd_params->r_seed = atoi(optarg);
-              break;
+        case 'n':
+            cmd_params->nthreads = atoi(optarg);
+            break;
 
-          case 'y':
-              cmd_params->s_seed = atoi(optarg);
-              break;
+        case 'p':
+            cmd_params->perfconf = mystrdup(optarg);
+            break;
 
-          case 'z':
-              cmd_params->skew = atof(optarg);
-              break;
+        case 'r':
+            cmd_params->r_size = atoi(optarg);
+            break;
 
-          default:
-              break;
+        case 's':
+            cmd_params->s_size = atoi(optarg);
+            break;
+
+        case 'o':
+            cmd_params->perfout = mystrdup(optarg);
+            break;
+
+        case 'x':
+            cmd_params->r_seed = atoi(optarg);
+            break;
+
+        case 'y':
+            cmd_params->s_seed = atoi(optarg);
+            break;
+
+        case 'z':
+            cmd_params->skew = atof(optarg);
+            break;
+
+        default:
+            break;
         }
     }
-     
+
     /* if (verbose_flag) */
     /*     printf ("verbose flag is set \n"); */
 
     cmd_params->nonunique_keys = nonunique_flag;
-    cmd_params->verbose        = verbose_flag;     
+    cmd_params->verbose        = verbose_flag;
     cmd_params->fullrange_keys = fullrange_flag;
     cmd_params->basic_numa     = basic_numa;
 
     /* Print any remaining command line arguments (not options). */
-    if (optind < argc) {
+    if (optind < argc)
+    {
         printf ("non-option arguments: ");
         while (optind < argc)
             printf ("%s ", argv[optind++]);

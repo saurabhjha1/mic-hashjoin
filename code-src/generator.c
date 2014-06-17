@@ -1,8 +1,8 @@
 /**
  * @file    generator.c
  * @author  Saurabh jha <saurabh.jha.2010@gmail.com>
- *  
- * @brief  creates various different workloads. 
+ *
+ * @brief  creates various different workloads.
  * @Note   code adapted from ETH source code
  *
  * (c) 2014, NTU Singapore, Xtra Group
@@ -26,70 +26,71 @@
 #include "prj_params.h"         /* RELATION_PADDING for Parallel Radix */
 #include <malloc.h>
 /* return a random number in range [0,N] */
-#include <assert.h> 
-#include <stdlib.h> 
-#include <sys/mman.h> 
- 
-#define HUGE_PAGE_SIZE (2 * 1024 * 1024) 
-#define ALIGN_TO_PAGE_SIZE(x) \ 
- (((x) + HUGE_PAGE_SIZE - 1) / HUGE_PAGE_SIZE * HUGE_PAGE_SIZE) 
- 
-void *malloc_huge_pages(size_t size) 
-{ 
- // Use 1 extra page to store allocation metadata 
- // (libhugetlbfs is more efficient in this regard) 
- size_t real_size = ALIGN_TO_PAGE_SIZE(size + HUGE_PAGE_SIZE); 
- char *ptr = (char *)mmap(NULL, real_size, PROT_READ | PROT_WRITE, 
- MAP_PRIVATE | MAP_ANONYMOUS | 
- MAP_POPULATE | MAP_HUGETLB, -1, 0); 
- 
- if (ptr == MAP_FAILED) { 
- // The mmap() call failed. Try to malloc instead 
- ptr = (char *)malloc(real_size); 
- if (ptr == NULL) return NULL; 
- real_size = 0; 
- } 
- 
- // Save real_size since mmunmap() requires a size parameter 
- *((size_t *)ptr) = real_size; 
- 
- // Skip the page with metadata 
- return ptr + HUGE_PAGE_SIZE; 
-} 
- 
-void free_huge_pages(void *ptr) 
-{ 
- if (ptr == NULL) return; 
- 
- // Jump back to the page with metadata 
- void *real_ptr = (char *)ptr - HUGE_PAGE_SIZE; 
- // Read the original allocation size 
- size_t real_size = *((size_t *)real_ptr); 
- 
- assert(real_size % HUGE_PAGE_SIZE == 0); 
- 
- if (real_size != 0) 
- // The memory was allocated via mmap() 
- // and must be deallocated via munmap() 
- munmap(real_ptr, real_size); 
- else 
- // The memory was allocated via malloc() 
- // and must be deallocated via free() 
- free(real_ptr); 
-} 
- 
+#include <assert.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+
+#define HUGE_PAGE_SIZE (2 * 1024 * 1024)
+#define ALIGN_TO_PAGE_SIZE(x) \
+ (((x) + HUGE_PAGE_SIZE - 1) / HUGE_PAGE_SIZE * HUGE_PAGE_SIZE)
+
+void *malloc_huge_pages(size_t size)
+{
+// Use 1 extra page to store allocation metadata
+// (libhugetlbfs is more efficient in this regard)
+    size_t real_size = ALIGN_TO_PAGE_SIZE(size + HUGE_PAGE_SIZE);
+    char *ptr = (char *)mmap(NULL, real_size, PROT_READ | PROT_WRITE,
+                             MAP_PRIVATE | MAP_ANONYMOUS |
+                             MAP_POPULATE | MAP_HUGETLB, -1, 0);
+
+    if (ptr == MAP_FAILED)
+    {
+// The mmap() call failed. Try to malloc instead
+        ptr = (char *)malloc(real_size);
+        if (ptr == NULL) return NULL;
+        real_size = 0;
+    }
+
+// Save real_size since mmunmap() requires a size parameter
+    *((size_t *)ptr) = real_size;
+
+// Skip the page with metadata
+    return ptr + HUGE_PAGE_SIZE;
+}
+
+void free_huge_pages(void *ptr)
+{
+    if (ptr == NULL) return;
+
+// Jump back to the page with metadata
+    void *real_ptr = (char *)ptr - HUGE_PAGE_SIZE;
+// Read the original allocation size
+    size_t real_size = *((size_t *)real_ptr);
+
+    assert(real_size % HUGE_PAGE_SIZE == 0);
+
+    if (real_size != 0)
+// The memory was allocated via mmap()
+// and must be deallocated via munmap()
+        munmap(real_ptr, real_size);
+    else
+// The memory was allocated via malloc()
+// and must be deallocated via free()
+        free(real_ptr);
+}
+
 
 
 #define RAND_RANGE(N) ((double)rand() / ((double)RAND_MAX + 1) * (N))
 #define RAND_RANGE48(N,STATE) ((double)nrand48(STATE)/((double)RAND_MAX+1)*(N))
 
 #ifdef HUGE_PAGES
-	#define MALLOC(SZ) malloc_huge_pages(SZ+RELATION_PADDING)
-	#define FREE(X,SZ) free_huge_pages(X)
+#define MALLOC(SZ) malloc_huge_pages(SZ+RELATION_PADDING)
+#define FREE(X,SZ) free_huge_pages(X)
 
 #else
-	#define MALLOC(SZ) alloc_aligned(SZ+RELATION_PADDING) /*malloc(SZ+RELATION_PADDING)*/ 
-	#define FREE(X,SZ) free(X)
+#define MALLOC(SZ) alloc_aligned(SZ+RELATION_PADDING) /*malloc(SZ+RELATION_PADDING)*/
+#define FREE(X,SZ) free(X)
 
 #endif
 /* Uncomment the following to persist input relations to disk. */
@@ -109,14 +110,16 @@ alloc_aligned(size_t size)
     int rv;
     rv = posix_memalign((void**)&ret, CACHE_LINE_SIZE, size);
 
-    if (rv) { 
+    if (rv)
+    {
         perror("alloc_aligned() failed: out of memory");
-        return 0; 
+        return 0;
     }
-    
+
     /** Not an elegant way of passing whether we will numa-localize, but this
         feature is experimental anyway. */
-    if(numalocalize) {
+    if(numalocalize)
+    {
         tuple_t * mem = (tuple_t *) ret;
         uint32_t ntuples = size / sizeof(tuple_t);
         numa_localize(mem, ntuples, nthreads);
@@ -125,8 +128,8 @@ alloc_aligned(size_t size)
     return ret;
 }
 
-void 
-seed_generator(unsigned int seed) 
+void
+seed_generator(unsigned int seed)
 {
     srand(seed);
     seedValue = seed;
@@ -137,7 +140,8 @@ seed_generator(unsigned int seed)
 static void
 check_seed()
 {
-    if(!seeded) {
+    if(!seeded)
+    {
         seedValue = time(NULL);
         srand(seedValue);
         seeded = 1;
@@ -145,37 +149,39 @@ check_seed()
 }
 
 
-/** 
+/**
  * Shuffle tuples of the relation using Knuth shuffle.
- * 
- * @param relation 
+ *
+ * @param relation
  */
-void 
+void
 knuth_shuffle(relation_t * relation)
 {
 #ifndef SEQ
     int i;
-    for (i = relation->num_tuples - 1; i > 0; i--) {
+    for (i = relation->num_tuples - 1; i > 0; i--)
+    {
         int32_t  j              = RAND_RANGE(i);
         intkey_t tmp            = relation->tuples[i].key;
         relation->tuples[i].key = relation->tuples[j].key;
         relation->tuples[j].key = tmp;
     }
-#endif 
+#endif
 }
 
-void 
+void
 knuth_shuffle48(relation_t * relation, unsigned short * state)
 {
 #ifndef SEQ
     int i;
-    for (i = relation->num_tuples - 1; i > 0; i--) {
+    for (i = relation->num_tuples - 1; i > 0; i--)
+    {
         int32_t  j              = RAND_RANGE48(i, state);
         intkey_t tmp            = relation->tuples[i].key;
         relation->tuples[i].key = relation->tuples[j].key;
         relation->tuples[j].key = tmp;
     }
-#endif    
+#endif
 }
 
 /**
@@ -183,11 +189,12 @@ knuth_shuffle48(relation_t * relation, unsigned short * state)
  * relation must have been allocated
  */
 void
-random_unique_gen(relation_t *rel) 
+random_unique_gen(relation_t *rel)
 {
     uint32_t i;
 
-    for (i = 0; i < rel->num_tuples; i++) {
+    for (i = 0; i < rel->num_tuples; i++)
+    {
         rel->tuples[i].key = (i+1);
     }
 
@@ -195,7 +202,8 @@ random_unique_gen(relation_t *rel)
     knuth_shuffle(rel);
 }
 
-struct create_arg_t {
+struct create_arg_t
+{
     relation_t rel;
     uint32_t firstkey;
 };
@@ -203,10 +211,10 @@ struct create_arg_t {
 typedef struct create_arg_t create_arg_t;
 
 /**
- * Create random unique keys starting from firstkey 
+ * Create random unique keys starting from firstkey
  */
 void *
-random_unique_gen_thread(void * args) 
+random_unique_gen_thread(void * args)
 {
     create_arg_t * arg      = (create_arg_t *) args;
     relation_t *   rel      = & arg->rel;
@@ -217,28 +225,30 @@ random_unique_gen_thread(void * args)
     unsigned short state[3] = {0, 0, 0};
     unsigned int seed       = time(NULL) + * (unsigned int *) pthread_self();
     memcpy(state, &seed, sizeof(seed));
-    
-    for (i = 0; i < rel->num_tuples; i++) {
+
+    for (i = 0; i < rel->num_tuples; i++)
+    {
         rel->tuples[i].key = firstkey ++;
     }
 
     /* randomly shuffle elements */
-   knuth_shuffle48(rel, state);
+    knuth_shuffle48(rel, state);
 
     return 0;
 }
 
-/** 
- * Just initialize mem. to 0 for making sure it will be allocated numa-local 
+/**
+ * Just initialize mem. to 0 for making sure it will be allocated numa-local
  */
 void *
-numa_localize_thread(void * args) 
+numa_localize_thread(void * args)
 {
     create_arg_t * arg = (create_arg_t *) args;
     relation_t *   rel = & arg->rel;
     uint32_t i;
-    
-    for (i = 0; i < rel->num_tuples; i++) {
+
+    for (i = 0; i < rel->num_tuples; i++)
+    {
         rel->tuples[i].key = 0;
     }
 
@@ -256,7 +266,8 @@ write_relation(relation_t * rel, char * filename)
 
     fprintf(fp, "#KEY, VAL\n");
 
-    for (i = 0; i < rel->num_tuples; i++) {
+    for (i = 0; i < rel->num_tuples; i++)
+    {
         fprintf(fp, "%d %d\n", rel->tuples[i].key, rel->tuples[i].payload);
     }
 
@@ -267,29 +278,31 @@ write_relation(relation_t * rel, char * filename)
  * Generate tuple IDs -> random distribution
  * relation must have been allocated
  */
-void 
-random_gen(relation_t *rel, const int32_t maxid) 
+void
+random_gen(relation_t *rel, const int32_t maxid)
 {
     uint32_t i;
 
-    for (i = 0; i < rel->num_tuples; i++) {
+    for (i = 0; i < rel->num_tuples; i++)
+    {
         rel->tuples[i].key = RAND_RANGE(maxid);
     }
 }
 
-int 
-create_relation_pk(relation_t *relation, int32_t num_tuples) 
+int
+create_relation_pk(relation_t *relation, int32_t num_tuples)
 {
     check_seed();
 
     relation->num_tuples = num_tuples;
     relation->tuples = (tuple_t*)MALLOC(relation->num_tuples * sizeof(tuple_t));
-    
-    if (!relation->tuples) { 
+
+    if (!relation->tuples)
+    {
         perror("out of memory");
-        return -1; 
+        return -1;
     }
-  
+
     random_unique_gen(relation);
 
 #ifdef PERSIST_RELATIONS
@@ -299,9 +312,9 @@ create_relation_pk(relation_t *relation, int32_t num_tuples)
     return 0;
 }
 
-int 
-parallel_create_relation_pk(relation_t *relation, int32_t num_tuples, 
-                            uint32_t nthreads) 
+int
+parallel_create_relation_pk(relation_t *relation, int32_t num_tuples,
+                            uint32_t nthreads)
 {
     uint32_t i, rv;
     uint32_t offset = 0;
@@ -313,9 +326,10 @@ parallel_create_relation_pk(relation_t *relation, int32_t num_tuples,
     /* we need aligned allocation of items */
     relation->tuples = (tuple_t*) MALLOC(num_tuples * sizeof(tuple_t));
 
-    if (!relation->tuples) { 
+    if (!relation->tuples)
+    {
         perror("out of memory");
-        return -1; 
+        return -1;
     }
 
     create_arg_t args[nthreads];
@@ -337,28 +351,31 @@ parallel_create_relation_pk(relation_t *relation, int32_t num_tuples,
 
     pthread_attr_init(&attr);
 
-    for( i = 0; i < nthreads; i++ ) {
+    for( i = 0; i < nthreads; i++ )
+    {
         int cpu_idx = get_cpu_id(i,nthreads);
-        
+
         CPU_ZERO(&set);
         CPU_SET(cpu_idx, &set);
         pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &set);
 
         args[i].firstkey       = offset + 1;
         args[i].rel.tuples     = relation->tuples + offset;
-        args[i].rel.num_tuples = (i == nthreads-1) ? ntuples_lastthr 
+        args[i].rel.num_tuples = (i == nthreads-1) ? ntuples_lastthr
                                  : ntuples_perthr;
         offset += ntuples_perthr;
 
-        rv = pthread_create(&tid[i], &attr, random_unique_gen_thread, 
+        rv = pthread_create(&tid[i], &attr, random_unique_gen_thread,
                             (void*)&args[i]);
-        if (rv){
+        if (rv)
+        {
             fprintf(stderr, "[ERROR] pthread_create() return code is %d\n", rv);
             exit(-1);
         }
     }
 
-    for(i = 0; i < nthreads; i++){
+    for(i = 0; i < nthreads; i++)
+    {
         pthread_join(tid[i], NULL);
     }
 
@@ -368,8 +385,8 @@ parallel_create_relation_pk(relation_t *relation, int32_t num_tuples,
     return 0;
 }
 
-int 
-numa_localize(tuple_t * relation, int32_t num_tuples, uint32_t nthreads) 
+int
+numa_localize(tuple_t * relation, int32_t num_tuples, uint32_t nthreads)
 {
     uint32_t i, rv;
     uint32_t offset = 0;
@@ -394,28 +411,31 @@ numa_localize(tuple_t * relation, int32_t num_tuples, uint32_t nthreads)
 
     pthread_attr_init(&attr);
 
-    for( i = 0; i < nthreads; i++ ) {
+    for( i = 0; i < nthreads; i++ )
+    {
         int cpu_idx = get_cpu_id(i,nthreads);
-        
+
         CPU_ZERO(&set);
         CPU_SET(cpu_idx, &set);
         pthread_attr_setaffinity_np(&attr, sizeof(cpu_set_t), &set);
 
         args[i].firstkey       = offset + 1;
         args[i].rel.tuples     = relation + offset;
-        args[i].rel.num_tuples = (i == nthreads-1) ? ntuples_lastthr 
+        args[i].rel.num_tuples = (i == nthreads-1) ? ntuples_lastthr
                                  : ntuples_perthr;
         offset += ntuples_perthr;
 
-        rv = pthread_create(&tid[i], &attr, numa_localize_thread, 
+        rv = pthread_create(&tid[i], &attr, numa_localize_thread,
                             (void*)&args[i]);
-        if (rv){
+        if (rv)
+        {
             fprintf(stderr, "[ERROR] pthread_create() return code is %d\n", rv);
             exit(-1);
         }
     }
 
-    for(i = 0; i < nthreads; i++){
+    for(i = 0; i < nthreads; i++)
+    {
         pthread_join(tid[i], NULL);
     }
 
@@ -423,7 +443,7 @@ numa_localize(tuple_t * relation, int32_t num_tuples, uint32_t nthreads)
 }
 
 
-int 
+int
 create_relation_fk(relation_t *relation, int32_t num_tuples, const int32_t maxid)
 {
     int32_t i, iters, remainder;
@@ -433,15 +453,17 @@ create_relation_fk(relation_t *relation, int32_t num_tuples, const int32_t maxid
 
     relation->num_tuples = num_tuples;
     relation->tuples = (tuple_t*)MALLOC(relation->num_tuples * sizeof(tuple_t));
-      
-    if (!relation->tuples) { 
+
+    if (!relation->tuples)
+    {
         perror("out of memory");
-        return -1; 
+        return -1;
     }
-  
+
     /* alternative generation method */
     iters = num_tuples / maxid;
-    for(i = 0; i < iters; i++){
+    for(i = 0; i < iters; i++)
+    {
         tmp.num_tuples = maxid;
         tmp.tuples = relation->tuples + maxid * i;
         random_unique_gen(&tmp);
@@ -449,7 +471,8 @@ create_relation_fk(relation_t *relation, int32_t num_tuples, const int32_t maxid
 
     /* if num_tuples is not an exact multiple of maxid */
     remainder = num_tuples % maxid;
-    if(remainder > 0) {
+    if(remainder > 0)
+    {
         tmp.num_tuples = remainder;
         tmp.tuples = relation->tuples + maxid * iters;
         random_unique_gen(&tmp);
@@ -462,44 +485,47 @@ create_relation_fk(relation_t *relation, int32_t num_tuples, const int32_t maxid
     return 0;
 }
 
-/** 
+/**
  * Create a foreign-key relation using the given primary-key relation and
  * foreign-key relation size. Keys in pkrel is randomly distributed in the full
  * integer range.
- * 
+ *
  * @param fkrel [output] foreign-key relation
  * @param pkrel [input] primary-key relation
- * @param num_tuples 
- * 
- * @return 
+ * @param num_tuples
+ *
+ * @return
  */
-int 
+int
 create_relation_fk_from_pk(relation_t *fkrel, relation_t *pkrel,
-                           int32_t num_tuples) 
+                           int32_t num_tuples)
 {
     int rv, i, iters, remainder;
 
-    rv = posix_memalign((void**)&fkrel->tuples, CACHE_LINE_SIZE, 
+    rv = posix_memalign((void**)&fkrel->tuples, CACHE_LINE_SIZE,
                         num_tuples * sizeof(tuple_t) + RELATION_PADDING);
 
-    if (rv) { 
+    if (rv)
+    {
         perror("aligned alloc failed: out of memory");
-        return 0; 
+        return 0;
     }
 
     fkrel->num_tuples = num_tuples;
 
     /* alternative generation method */
     iters = num_tuples / pkrel->num_tuples;
-    for(i = 0; i < iters; i++){
-        memcpy(fkrel->tuples + i * pkrel->num_tuples, pkrel->tuples, 
+    for(i = 0; i < iters; i++)
+    {
+        memcpy(fkrel->tuples + i * pkrel->num_tuples, pkrel->tuples,
                pkrel->num_tuples * sizeof(tuple_t));
     }
 
     /* if num_tuples is not an exact multiple of pkrel->num_tuples */
     remainder = num_tuples % pkrel->num_tuples;
-    if(remainder > 0) {
-        memcpy(fkrel->tuples + i * pkrel->num_tuples, pkrel->tuples, 
+    if(remainder > 0)
+    {
+        memcpy(fkrel->tuples + i * pkrel->num_tuples, pkrel->tuples,
                remainder * sizeof(tuple_t));
     }
 
@@ -509,16 +535,17 @@ create_relation_fk_from_pk(relation_t *fkrel, relation_t *pkrel,
 }
 
 int create_relation_nonunique(relation_t *relation, int32_t num_tuples,
-                              const int32_t maxid) 
+                              const int32_t maxid)
 {
     check_seed();
 
     relation->num_tuples = num_tuples;
     relation->tuples = (tuple_t*)MALLOC(relation->num_tuples * sizeof(tuple_t));
-    
-    if (!relation->tuples) { 
+
+    if (!relation->tuples)
+    {
         perror("out of memory");
-        return -1; 
+        return -1;
     }
 
     random_gen(relation, maxid);
@@ -526,8 +553,8 @@ int create_relation_nonunique(relation_t *relation, int32_t num_tuples,
     return 0;
 }
 
-double 
-zipf_ggl(double * seed) 
+double
+zipf_ggl(double * seed)
 {
     double t, d2=0.2147483647e10;
     t = *seed;
@@ -536,18 +563,19 @@ zipf_ggl(double * seed)
     return (t-1.0e0)/(d2-1.0e0);
 }
 
-int 
+int
 create_relation_zipf(relation_t * relation, int32_t num_tuples,
-                     const int32_t maxid, const double zipf_param) 
+                     const int32_t maxid, const double zipf_param)
 {
     check_seed();
 
     relation->num_tuples = num_tuples;
     relation->tuples = (tuple_t*) MALLOC(relation->num_tuples * sizeof(tuple_t));
 
-    if (!relation->tuples) { 
+    if (!relation->tuples)
+    {
         perror("out of memory");
-        return -1; 
+        return -1;
     }
 
     gen_zipf(num_tuples, maxid, zipf_param, &relation->tuples);
@@ -555,8 +583,8 @@ create_relation_zipf(relation_t * relation, int32_t num_tuples,
     return 0;
 }
 
-void 
-delete_relation(relation_t * rel) 
+void
+delete_relation(relation_t * rel)
 {
     /* clean up */
     FREE(rel->tuples, rel->num_tuples * sizeof(tuple_t));

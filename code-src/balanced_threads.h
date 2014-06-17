@@ -1,10 +1,10 @@
 /**
  * @file    balanced_threads.h
  * @author  Saurabh jha <saurabh.jha.2010@gmail.com>
- *  
- * @brief  balancer method provides an interface to assign threads on 
+ *
+ * @brief  balancer method provides an interface to assign threads on
  * 	   to the physical cores in much the same way as the openmp
- *	   balance thread affinity. 
+ *	   balance thread affinity.
  * @Note   this method only applies to mic cards.
  *
  * (c) 2014, NTU Singapore, Xtra Group
@@ -35,7 +35,7 @@ static int mfree=0;
 /**
  * Returns SMT aware logical to physical CPU mapping for a given thread id.
  */
- 
+
 
 /* On mic platforms creating more than 240 threads cannot speed up the application because of its in order execution model,
    However, the below code takes care of any number of threads that needs to be spawned in a balanced way.
@@ -47,33 +47,33 @@ int balancer(int thread_id, int nthreads)
 {
 
 
-	int tpc =( nthreads/MIC_CORES) ; //calculate the occupancy depending on cores and threads that needs to be created
-	int tid;
-	if (nthreads/MIC_CORES < 1) tpc = 1 ;
-	if(cpu[mfree]<tpc)
-	{
-	   tid =((mfree*MIC_HT) + (cpu[mfree]%MIC_HT))%240;
-	   cpu[mfree]++;
-	   
-	}
-	else
-	{
-	   mfree++;
-	   tid = ((mfree*MIC_HT) + (cpu[mfree]%MIC_HT))%(240);
-	  
-	   cpu[mfree]++;
-	   
-	}
+    int tpc =( nthreads/MIC_CORES) ; //calculate the occupancy depending on cores and threads that needs to be created
+    int tid;
+    if (nthreads/MIC_CORES < 1) tpc = 1 ;
+    if(cpu[mfree]<tpc)
+    {
+        tid =((mfree*MIC_HT) + (cpu[mfree]%MIC_HT))%240;
+        cpu[mfree]++;
 
-return tid; 
-} 
+    }
+    else
+    {
+        mfree++;
+        tid = ((mfree*MIC_HT) + (cpu[mfree]%MIC_HT))%(240);
 
-int 
-get_cpu_id(int thread_id, int nthreads) 
-{
-return balancer(thread_id,nthreads);
+        cpu[mfree]++;
+
+    }
+
+    return tid;
 }
 
-#else 
+int
+get_cpu_id(int thread_id, int nthreads)
+{
+    return balancer(thread_id,nthreads);
+}
+
+#else
 #error "Balanced mode only for mic cards"
 #endif
