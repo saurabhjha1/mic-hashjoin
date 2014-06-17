@@ -2,7 +2,14 @@ mic-hashjoin
 ============
 
 
- author  Saurabh jha <saurabh.jha.2010@gmail.com>
+Authors
+-------
+
+	* Saurabh Jha - NTU Singapore
+	* Mian LU - IHPC Singapore
+	* Bingsheng He- NTU Singapore
+	* Huynh Phung Huynh - IHPC Singapore
+<br>
  (c) 2014, NTU Singapore, Xtra Group
  
 ==============================================================================================================
