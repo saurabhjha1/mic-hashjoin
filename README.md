@@ -1,14 +1,16 @@
 mic-hashjoin
 ============
+Hash join implementation for Xeon Phi (mic) and CPU's
+<br>
 (c) 2014, NTU Singapore, Xtra Group
 
 Authors
 -------
 
-	* Saurabh Jha - NTU Singapore
-	* Mian LU - IHPC Singapore
-	* Bingsheng He- NTU Singapore
-	* Huynh Phung Huynh - IHPC Singapore
+* Saurabh Jha - NTU Singapore
+* Mian LU - IHPC Singapore
+* Bingsheng He- NTU Singapore
+* Huynh Phung Huynh - IHPC Singapore
 <br>
 
 
@@ -16,10 +18,7 @@ Authors
  <br>
  Group Home Page - <a href="http://pdcc.ntu.edu.sg/xtra"> Xtra </a>
  
-==============================================================================================================
 
-Hash join implementation for Xeon Phi (mic) and CPU's
-===============================================================================================================
 Compilation Steps on MIC Cards
 ==============================
 1. cd code-src
