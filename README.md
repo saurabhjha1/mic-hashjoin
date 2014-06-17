@@ -1,20 +1,13 @@
 mic-hashjoin
 ============
 
-Hash join implementation for Xeon Phi (mic) and CPU's
 
-/**
- * @file    README.txt
- * @author  Saurabh jha <saurabh.jha.2010@gmail.com>
- *  
- * @brief  Readme File
- *
+ * author  Saurabh jha <saurabh.jha.2010@gmail.com>
  * (c) 2014, NTU Singapore, Xtra Group
- *
- */
+ 
+==============================================================================================================
 
-Perf counters can only be used in cpu mode. for mic these counters will be made available after release of KNL.
-
+Hash join implementation for Xeon Phi (mic) and CPU's
 ===============================================================================================================
 Compilation Steps on MIC Cards
 =================
@@ -66,4 +59,9 @@ Running code on CPU
 2. Other options and arguments same as shown for mic cards.
 ==================================================================================================================
 ==================================================================================================================
+
+NOTE
+
+Perf counters can only be used in cpu mode. for mic these counters will be made available after release of KNL.
+
 
