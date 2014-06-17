@@ -2,8 +2,8 @@ mic-hashjoin
 ============
 
 
- * author  Saurabh jha <saurabh.jha.2010@gmail.com>
- * (c) 2014, NTU Singapore, Xtra Group
+ author  Saurabh jha <saurabh.jha.2010@gmail.com>
+ (c) 2014, NTU Singapore, Xtra Group
  
 ==============================================================================================================
 
@@ -16,7 +16,7 @@ Compilation Steps on MIC Cards
 
 	* -DSIMD	---> enable SIMD Vectorization
 	* -DPREFETCH_NPJ---> enable manual prefetching in NPO, mNPO
-        * -DSWWC 	---> enable software managed buffers
+	* -DSWWC 	---> enable software managed buffers
 	* -DHUGE_PAGES	---> enable huge pages
 	* -DPDIST 	---> enable setting a manual prefetch distance for mPRO,mPRH,mPRHO 
 	* -DSKEW_HANDLING ---> enable skew handling [enabled by default]
@@ -34,18 +34,17 @@ Running code on MIC Cards
 2. ./runOnmic.sh ./a.out "-a PRO -n 180"
 	
 	Join algorithm selection, algorithms : PRO, PRH, PRHO, NPO
-         -a --algo=<name>    Run the hash join algorithm named <name> [PRO]
- 	 on mic cards, PRO refers to mPRO, PRHO refers mPRHO, PRH refers to mPRH and NPO refers to mNPO
-      Other join configuration options, with default values in [] :
-         -n --nthreads=<N>  Number of threads to use <N> [2]
-         -r --r-size=<R>    Number of tuples in build relation R <R> [128000000]
-         -s --s-size=<S>    Number of tuples in probe relation S <S> [128000000]
-         -x --r-seed=<x>    Seed value for generating relation R <x> [12345]    
-         -y --s-seed=<y>    Seed value for generating relation S <y> [54321]    
-         -z --skew=<z>      Zipf skew parameter for probe relation S <z> [0.0]  
-         --non-unique       Use non-unique (duplicated) keys in input relations 
-         --full-range       Spread keys in relns. in full 32-bit integer range
-
+	* -a --algo=&lt; name &gt;    Run the hash join algorithm named &lt; name &gt; [PRO]
+	On mic cards, PRO refers to mPRO, PRHO refers mPRHO, PRH refers to mPRH and NPO refers to mNPO
+	Other join configuration options, with default values in [] 
+	* -n --nthreads= &lt; N &gt;  Number of threads to use &lt; N &gt; [2]
+	* -r --r-size=&lt; R &gt;    Number of tuples in build relation R &lt; R &gt; [128000000]
+	* -s --s-size=&lt; S &gt;    Number of tuples in probe relation S &lt; S &gt; [128000000]
+	* -x --r-seed=&lt; x &gt;    Seed value for generating relation R &lt; x &gt; [12345]
+	* -y --s-seed=&lt; y &gt;    Seed value for generating relation S &lt; y &gt; [54321]
+	* -z --skew=&lt; z &gt;      Zipf skew parameter for probe relation S &lt; z &gt; [0.0]
+	* --non-unique       Use non-unique (duplicated) keys in input relations 
+	* --full-range       Spread keys in relns. in full 32-bit integer range
 
 Compilation on CPU
 ==================
@@ -62,8 +61,5 @@ Running code on CPU
 ==================================================================================================================
 ==================================================================================================================
 
-NOTE
-
-Perf counters can only be used in cpu mode. for mic these counters will be made available after release of KNL.
 
 
