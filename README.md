@@ -10,22 +10,22 @@ mic-hashjoin
 Hash join implementation for Xeon Phi (mic) and CPU's
 ===============================================================================================================
 Compilation Steps on MIC Cards
-=================
+==============================
 1. cd code-src
 2. icc *.c -pthread -std=c99 -O3 -mmic -DPREFETCH_NPJ -DSIMD -DSWWC -DHUGE_PAGES -DPDSIT=64 -DSKEW_HANDLING
 
-	-DSIMD 		---> enable SIMD Vectorization
-	-DPREFETCH_NPJ  ---> enable manual prefetching in NPO, mNPO
-        -DSWWC 		---> enable software managed buffers
-	-DHUGE_PAGES	---> enable huge pages
-	-DPDIST 	---> enable setting a manual prefetch distance for mPRO,mPRH,mPRHO 
-	-DSKEW_HANDLING ---> enable skew handling [enabled by default]
-	-DKEY_8B	---> enable 64bit workload [not shown, add to list of arguments to enable]
-	-DSYNCSTATS	---> enable to show synchronization statistics [not shown, add to list of arguments to enable]
-	-DCOMPACT	---> enable compact thread affinity
-	-DBALANCED	---> enable balance thread affinity [default]
-	-DSCATTER	---> enable scatter thread affinity
-===============================================================================================================
+	* -DSIMD	---> enable SIMD Vectorization
+	* -DPREFETCH_NPJ---> enable manual prefetching in NPO, mNPO
+        * -DSWWC 	---> enable software managed buffers
+	* -DHUGE_PAGES	---> enable huge pages
+	* -DPDIST 	---> enable setting a manual prefetch distance for mPRO,mPRH,mPRHO 
+	* -DSKEW_HANDLING ---> enable skew handling [enabled by default]
+	* -DKEY_8B	---> enable 64bit workload [not shown, add to list of arguments to enable]
+	* -DSYNCSTATS	---> enable to show synchronization statistics [not shown, add to list of arguments to enable]
+	* -DCOMPACT	---> enable compact thread affinity
+	* -DBALANCED	---> enable balance thread affinity [default]
+	* -DSCATTER	---> enable scatter thread affinity
+
 Running code on MIC Cards
 =========================
 1. Initialize runOnmic.sh script with proper environment variables. 
@@ -45,18 +45,20 @@ Running code on MIC Cards
          -z --skew=<z>      Zipf skew parameter for probe relation S <z> [0.0]  
          --non-unique       Use non-unique (duplicated) keys in input relations 
          --full-range       Spread keys in relns. in full 32-bit integer range
-=================================================================================================================
-=================================================================================================================
+
+
 Compilation on CPU
 ==================
 1. cd code-src 
 2. icc *.c -pthread -std=c99 -O3 -DSWWC -DCOMPACT
 Note -DSCATTER and -DBALANCE not applicable for CPU and -DCOMPACT must be used.
-==================================================================================================================
+
 Running code on CPU
 ===================
 1. ./a.out -a PRO -n 16
 2. Other options and arguments same as shown for mic cards.
+
+
 ==================================================================================================================
 ==================================================================================================================
 
